@@ -1,0 +1,9 @@
+# Normaliza finales de línea para evitar diffs ruidosos entre SO.
+* text=auto eol=lf
+
+# Tratar como binarios (sin normalizar).
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
