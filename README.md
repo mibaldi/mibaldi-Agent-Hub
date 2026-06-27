@@ -65,20 +65,31 @@ openssl rand -hex 32   # -> APP_ENCRYPTION_KEY (debe tener 64 chars hex)
 # 3. Levanta todo (postgres + app con frontend servido por la API)
 docker compose up -d --build
 
-# 4. Abre la app
-#    http://localhost:8080   (o la IP de Tailscale del servidor)
+# 4. Abre la app desde cualquier dispositivo de tu tailnet
+#    http://100.83.238.95:48080
 ```
 
-La API sirve el frontend ya compilado, por lo que **un solo puerto (8080)**
-expone toda la aplicación.
+La API sirve el frontend ya compilado, por lo que **un solo puerto dedicado
+(`48080`)** expone toda la aplicación.
 
-### Tras Tailscale (recomendado)
+### Tras Tailscale (configuración por defecto)
 
-No expongas la app a Internet. Opciones:
+Por defecto, `docker-compose.yml` publica el puerto **sólo en la interfaz de
+Tailscale**, así que la app **no es accesible** desde la LAN ni desde Internet:
 
-1. En `docker-compose.yml`, cambia el mapeo de puerto a `127.0.0.1:8080:8080`
-   y accede mediante la IP de Tailscale de la máquina.
-2. O usa `tailscale serve` / un proxy interno para publicarla sólo en tu tailnet.
+```yaml
+ports:
+  - '${BIND_ADDR:-100.83.238.95}:${HOST_PORT:-48080}:8080'
+```
+
+- `BIND_ADDR` = IP de Tailscale de la máquina (por defecto `100.83.238.95`).
+- `HOST_PORT` = puerto dedicado en el host (por defecto `48080`).
+
+Ajusta ambos en tu `.env`. Accede desde cualquier dispositivo de la tailnet a
+`http://<BIND_ADDR>:<HOST_PORT>`. Si alguna vez necesitas exponerla a toda la
+red local, pon `BIND_ADDR=0.0.0.0` (no recomendado).
+
+> Alternativa: `tailscale serve` para publicarla con HTTPS dentro de la tailnet.
 
 ---
 

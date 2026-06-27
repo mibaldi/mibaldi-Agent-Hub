@@ -24,6 +24,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-mah}:${POSTGRES_PASSWORD:-changeme_db_password}@postgres:5432/${POSTGRES_DB:-mibaldi_agent_hub}?schema=public
+      # Puerto interno del contenedor (no se expone directamente).
       API_PORT: 8080
       API_HOST: 0.0.0.0
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
@@ -34,8 +35,10 @@ services:
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?Define APP_ENCRYPTION_KEY en .env}
       NODE_ENV: production
     ports:
-      # Tras Tailscale, cambia a "127.0.0.1:8080:8080" para no exponerlo en LAN.
-      - '${API_PORT:-8080}:8080'
+      # Puerto dedicado, publicado SOLO en la interfaz de Tailscale.
+      # Así la app NO queda expuesta en la LAN ni en Internet: solo accesible
+      # vía la tailnet (http://100.83.238.95:48080).
+      - '${BIND_ADDR:-100.83.238.95}:${HOST_PORT:-48080}:8080'
     volumes:
       # Claves SSH montadas como volumen de sólo lectura (opcional).
       - ./secrets:/app/secrets:ro
