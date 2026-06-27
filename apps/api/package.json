@@ -1,0 +1,45 @@
+{
+  "name": "@mah/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:dev": "prisma migrate dev",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.1",
+    "@fastify/static": "^8.0.3",
+    "@fastify/websocket": "^11.0.1",
+    "@mah/shared": "*",
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "ssh2": "^1.16.0",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  },
+  "optionalDependencies": {
+    "node-pty": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.9.0",
+    "@types/ssh2": "^1.15.1",
+    "@types/ws": "^8.5.13",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

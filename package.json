@@ -1,0 +1,29 @@
+{
+  "name": "mibaldi-agent-hub",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Web/PWA privada para gestionar hosts remotos, terminales tmux persistentes y agentes (Claude Code, Codex, etc.)",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @mah/shared",
+    "build:web": "npm run build -w @mah/web",
+    "build:api": "npm run build -w @mah/api",
+    "build": "npm run build:shared && npm run build:web && npm run build:api",
+    "dev:api": "npm run dev -w @mah/api",
+    "dev:web": "npm run dev -w @mah/web",
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev:web\"",
+    "prisma:generate": "npm run prisma:generate -w @mah/api",
+    "prisma:migrate": "npm run prisma:migrate -w @mah/api",
+    "start": "npm run start -w @mah/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

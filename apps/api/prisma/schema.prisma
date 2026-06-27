@@ -1,0 +1,65 @@
+// Esquema de base de datos de Mibaldi Agent Hub.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Host {
+  id              String   @id @default(uuid())
+  name            String
+  type            String // local | ssh | docker | wsl
+  hostname        String?
+  port            Int?
+  username        String?
+  authMethod      String // password | key | none
+  // Secretos cifrados (AES-256-GCM). Nunca en texto plano.
+  passwordEnc     String?
+  privateKeyEnc   String?
+  passphraseEnc   String?
+  basePath        String?
+  container       String?
+  tags            String[] @default([])
+  lastConnectedAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  projects Project[]
+  history  History[]
+}
+
+model Project {
+  id             String   @id @default(uuid())
+  hostId         String
+  host           Host     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  name           String
+  path           String
+  initialCommand String?
+  defaultAgent   String   @default("shell") // claude | codex | shell | custom
+  tmuxSession    String
+  quickCommands  Json     @default("[]")
+  favorite       Boolean  @default(false)
+  lastOpenedAt   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  history History[]
+}
+
+model History {
+  id          String   @id @default(uuid())
+  kind        String // session_open | quick_command | session_kill
+  hostId      String?
+  host        Host?    @relation(fields: [hostId], references: [id], onDelete: SetNull)
+  hostName    String?
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectName String?
+  command     String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}

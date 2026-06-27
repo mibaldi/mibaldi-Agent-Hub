@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.local
+.DS_Store
+coverage/
+apps/web/dev-dist/
+*.tsbuildinfo
+
+# Secretos montados como volumen (no subir claves)
+secrets/*
+!secrets/.gitkeep
