@@ -37,10 +37,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tmux ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiamos node_modules ya construidos (incluye node-pty compilado y Prisma client).
+# Con npm workspaces las dependencias se "hoistean" al node_modules raíz, así
+# que apps/api no tiene su propio node_modules: copiamos sólo el de la raíz
+# (incluye node-pty compilado, el cliente Prisma y el symlink a @mah/shared).
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
