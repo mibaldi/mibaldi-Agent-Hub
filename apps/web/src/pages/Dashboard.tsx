@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { DashboardData, ActiveSession } from '@mah/shared';
 import { api } from '../api';
 import { useAuth } from '../auth';
+import { usePwaInstall } from '../usePwaInstall';
 
 export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [sessions, setSessions] = useState<ActiveSession[]>([]);
   const [error, setError] = useState('');
   const { logout } = useAuth();
+  const { canInstall, installed, install, isIos } = usePwaInstall();
+  const [showIosHelp, setShowIosHelp] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +31,30 @@ export function Dashboard() {
           Salir
         </button>
       </div>
+
+      {!installed && (canInstall || isIos) && (
+        <div className="card card-row" style={{ borderColor: 'var(--accent)' }}>
+          <div>
+            <div className="title">📲 Instalar Agent Hub</div>
+            <div className="sub">Añádela a tu pantalla de inicio como app.</div>
+          </div>
+          {canInstall ? (
+            <button className="primary small" onClick={install}>
+              Instalar
+            </button>
+          ) : (
+            <button className="small" onClick={() => setShowIosHelp((v) => !v)}>
+              ¿Cómo?
+            </button>
+          )}
+        </div>
+      )}
+      {showIosHelp && (
+        <div className="card sub">
+          En iPhone: pulsa el botón <b>Compartir</b> de Safari y elige{' '}
+          <b>Añadir a pantalla de inicio</b>.
+        </div>
+      )}
 
       {data.lastProject && (
         <>
