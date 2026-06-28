@@ -1,0 +1,53 @@
+# Deploy stack for Portainer — pulls the prebuilt image from GHCR (no build on the VPS).
+#
+# IMPORTANT: keep the stack name "mibaldi-agent-hub" so the existing Postgres
+# volume (mibaldi-agent-hub_pgdata) is reused and the data is preserved.
+# The service is "postgres" and the volume is "pgdata" — same names as the old
+# build-based stack — precisely so nothing is orphaned on the upgrade.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mah}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_db_password}
+      POSTGRES_DB: ${POSTGRES_DB:-mibaldi_agent_hub}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-mah}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: ghcr.io/mibaldi/mibaldi-agent-hub:${IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Prisma necesita ?schema=public. El host es el servicio "postgres".
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mah}:${POSTGRES_PASSWORD:-changeme_db_password}@postgres:5432/${POSTGRES_DB:-mibaldi_agent_hub}?schema=public
+      API_PORT: 8080
+      API_HOST: 0.0.0.0
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en el stack}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?Define APP_ENCRYPTION_KEY en el stack}
+      NODE_ENV: production
+    ports:
+      # Puerto dedicado, publicado SOLO en la interfaz de Tailscale (tailnet).
+      # Pon BIND_ADDR=0.0.0.0 si quieres exponerlo a LAN/Internet.
+      - '${BIND_ADDR:-100.83.238.95}:${HOST_PORT:-48080}:8080'
+    volumes:
+      # Claves SSH montadas como volumen de sólo lectura (opcional).
+      - ./secrets:/app/secrets:ro
+      # Para hosts tipo "docker" desde el contenedor (opcional):
+      # - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  pgdata:
