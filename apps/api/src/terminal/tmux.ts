@@ -27,16 +27,18 @@ export function buildAttachOrCreate(opts: TmuxOptions): string {
   const session = sanitizeSessionName(opts.session);
   const sq = shSingleQuote(session);
   const cwdPart = opts.cwd ? ` -c ${shSingleQuote(opts.cwd)}` : '';
+  // -u fuerza UTF-8 en tmux con independencia de la locale del host (un SSH
+  // no interactivo suele caer en locale C, que pinta acentos/emoji como `_`).
   const lines: string[] = [];
-  lines.push(`if tmux has-session -t ${sq} 2>/dev/null; then`);
-  lines.push(`  tmux attach-session -t ${sq};`);
+  lines.push(`if tmux -u has-session -t ${sq} 2>/dev/null; then`);
+  lines.push(`  tmux -u attach-session -t ${sq};`);
   lines.push(`else`);
-  lines.push(`  tmux new-session -d -s ${sq}${cwdPart};`);
+  lines.push(`  tmux -u new-session -d -s ${sq}${cwdPart};`);
   if (opts.initialCommand && opts.initialCommand.trim()) {
     const cmd = shSingleQuote(opts.initialCommand.trim());
-    lines.push(`  tmux send-keys -t ${sq} ${cmd} C-m;`);
+    lines.push(`  tmux -u send-keys -t ${sq} ${cmd} C-m;`);
   }
-  lines.push(`  tmux attach-session -t ${sq};`);
+  lines.push(`  tmux -u attach-session -t ${sq};`);
   lines.push(`fi`);
   return lines.join('\n');
 }
